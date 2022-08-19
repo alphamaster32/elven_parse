@@ -23,6 +23,7 @@ pub struct Elf {
 pub enum Error {
     BadElf,
     OffsetCalculationFailure,
+    UnsupportedClass,
 }
 
 /// Wrapper type for the error result
@@ -78,6 +79,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(target_pointer_width = "64")]
     fn parse_elf64() {
         let file =
             std::fs::read("./tests/elf_test64")

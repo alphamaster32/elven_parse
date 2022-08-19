@@ -159,6 +159,12 @@ impl FileHeader {
             ElfClass::None
         };
 
+        #[cfg(target_pointer_width = "32")]
+        if self.e_class == ElfClass::Class64 || 
+            self.e_class == ElfClass::None {
+                return Err(Error::UnsupportedClass)
+        }
+
         // Check the data encoding of the elf file
         self.e_data = if elf.get(0x05) == Some(&1) {
             ElfData::ElfData2Lsb

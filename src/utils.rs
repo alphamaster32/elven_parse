@@ -1,15 +1,13 @@
-use crate::ElfData;
+use crate::file::ElfData;
 
 pub trait Integer: Sized {
-    type Array;
     fn endian_parse(range: core::ops::Range<usize>,
-        bytes: &[u8], e_data: &crate::ElfData) -> crate::Result<Self>;
+        bytes: &[u8], e_data: &ElfData) -> crate::Result<Self>;
 }
 
 impl Integer for usize {
-    type Array = [u8; 8];
     fn endian_parse(range: core::ops::Range<usize>,
-        bytes: &[u8], e_data: &crate::ElfData) -> crate::Result<Self> {
+        bytes: &[u8], e_data: &ElfData) -> crate::Result<Self> {
         let arr = bytes.get(range)
             .ok_or(crate::Error::OffsetCalculationFailure)?
             .try_into()
@@ -23,9 +21,8 @@ impl Integer for usize {
 }
 
 impl Integer for u32 {
-    type Array = [u8; 4];
     fn endian_parse(range: core::ops::Range<usize>,
-        bytes: &[u8], e_data: &crate::ElfData) -> crate::Result<Self> {
+        bytes: &[u8], e_data: &ElfData) -> crate::Result<Self> {
         let arr = bytes.get(range)
             .ok_or(crate::Error::OffsetCalculationFailure)?
             .try_into()
@@ -39,9 +36,8 @@ impl Integer for u32 {
 }
 
 impl Integer for u16 {
-    type Array = [u8; 2];
     fn endian_parse(range: core::ops::Range<usize>,
-        bytes: &[u8], e_data: &crate::ElfData) -> crate::Result<Self> {
+        bytes: &[u8], e_data: &ElfData) -> crate::Result<Self> {
         let arr = bytes.get(range)
             .ok_or(crate::Error::OffsetCalculationFailure)?
             .try_into()

@@ -37,7 +37,7 @@ pub struct ProgramHeader {
 }
 
 /// Enum to identify the program header type
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ProgramType {
     None,
     /// Program header entry is unused
@@ -87,7 +87,7 @@ pub enum ProgramType {
 /// The three booleans represented in the struct are Read, Write, Execute 
 /// in order
 /// It is best that associated functions be used when using this struct
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Perm(bool, bool, bool);
 
 /// Helper type to implement the iterator type on

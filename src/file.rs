@@ -52,7 +52,7 @@ pub struct FileHeader {
 }
 
 /// ElfClass specifies elf architecture and bitness
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ElfClass {
     None,
     Class32,
@@ -60,7 +60,7 @@ pub enum ElfClass {
 }
 
 /// ElfData specifies elf data encodings
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ElfData {
     None,
     ElfData2Lsb,
@@ -68,7 +68,7 @@ pub enum ElfData {
 }
 
 /// ElfOSAbi specifies OS ABI of the elf file
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ElfOsAbi {
     Sysv,
     Hpux,
@@ -87,7 +87,7 @@ pub enum ElfOsAbi {
 }
 
 /// ElfType defines elf object type
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ElfType {
     None,
     Relocatable,
@@ -101,7 +101,7 @@ pub enum ElfType {
 /// ElfMachine Specifies machine ISA type
 /// As this might get too big we will not specify all the available machine
 /// types in the libc
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ElfMachine {
     None,
     Intel80386,
@@ -308,33 +308,33 @@ impl FileHeader {
             elf, &self.e_data)?;
 
         // Move the position to the new header part
-        pos = pos + 0x04;
+        pos += 0x04;
         self.e_ehsize = u16::endian_parse(pos..(pos + 0x02),
             elf, &self.e_data)?;
 
         // Move the position to the new header part
-        pos = pos + 0x02;
+        pos += 0x02;
 
         // Get the elf program header entry size
         self.e_phentsize = u16::endian_parse(pos..(pos + 0x02),
             elf, &self.e_data)?;
 
         // Move the position to the new header part
-        pos = pos + 0x02;
+        pos += 0x02;
 
         // Get the elf program header entry size
         self.e_phnum = u16::endian_parse(pos..(pos + 0x02),
             elf, &self.e_data)?;
 
         // Move the position to the new header part
-        pos = pos + 0x02;
+        pos += 0x02;
 
         // Get the elf section header table entry size
         self.e_shentrysize = u16::endian_parse(pos..(pos + 0x02),
             elf, &self.e_data)?;
 
         // Move the position to the new header part
-        pos = pos + 0x02;
+        pos += 0x02;
 
         // Get the elf section header table entry count
         self.e_shnum = u16::endian_parse(pos..(pos + 0x02),

@@ -6,31 +6,24 @@ pub const PF_X: usize = 1 << 0;
 pub const PF_W: usize = 1 << 1;
 pub const PF_R: usize = 1 << 2;
 
-/// ProgramHeader stores information regarding to how the image should be laid
-/// out in the system memory
+/// ProgramHeader stores information regarding to how the image sections
+/// should be laid out in the system memory
 #[derive(Debug, Copy, Clone)]
 pub struct ProgramHeader {
     /// Identifies the type of the segment
     pub p_type: ProgramType,
-
     /// Segment flags
     pub p_flags: Perm,
-
     /// Offset of the segment in the file
     pub p_offset: usize,
-
     /// Virtual address of the segment in memory
     pub p_vaddr: usize,
-
     /// Reserved for the physical address in the memory
     pub p_paddr: usize,
-
     /// Size of the segment in bytes
     pub p_filesz: usize,
-
     /// Size of the segment mapped in memory in bytes
     pub p_memsz: usize,
-
     /// Specifies alignment and should be integral power of 2 (1 and 0 are no
     /// alignment)
     pub p_align: usize,
@@ -42,43 +35,30 @@ pub enum ProgramType {
     None,
     /// Program header entry is unused
     PtNull,
-
     /// Loadable program segment
     PtLoad,
-
     /// Dynamic linking information
     PtDynamic,
-
     /// Program interpreter
     PtInterp,
-
     /// Auxiliary information
     PtNote,
-    
     /// Reserved (not sure for what)
     PtShlib,
-
     /// Entry for the header table itself
     PtPhdr,
-
     /// Thread-local storage segment
     PtTls,
-
     /// GCC .eh_frame_hdr segment
     PtGnuEhFrame,
-
     /// Indicates stack executability
     PtGnuStack,
-
     /// Read-only after relocation
     PtGnuRelro,
-
     /// GNU property
     PtGnuProperty,
-
     /// OS specific segment
     PtOs,
-
     /// Processor specific segment
     PtProc,
 }
@@ -97,23 +77,17 @@ pub struct Perm(bool, bool, bool);
 pub struct ProgramIterator<'a> {
     /// Owned program header struct to address
     program_header: ProgramHeader,
-
     /// Program header offset in the elf file
     offset: usize,
-
     /// Program header entry size
     phentsize: u16,
-
     /// Number of program header entries also used as 
     /// the index of the iteration
     phnum: u16,
-
     /// Elf class used for parsing
     class: ElfClass,
-
     /// Elf endianness used for parsing
     data: ElfData,
-
     /// A reference to the elf file
     elf: &'a [u8],
 }
@@ -253,7 +227,8 @@ impl<'a> Iterator for ProgramIterator<'a> {
             // Parse the program header into the struct
             self.program_header = 
                 self.program_header.parse(
-                    &self.elf[self.offset..self.offset + self.phentsize as usize],
+                    &self.elf[self.offset..self.offset + 
+                    self.phentsize as usize],
                     self.class, self.data).ok()?;
 
             // Calculate the next offset for the next program header

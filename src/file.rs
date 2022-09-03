@@ -1,3 +1,4 @@
+use crate::Result;
 use crate::utils::Integer;
 use crate::Error;
 
@@ -6,47 +7,33 @@ use crate::Error;
 pub struct FileHeader {
     /// Elf bitness
     pub e_class: ElfClass,
-
     /// Elf data encodings
     pub e_data: ElfData,
-
     /// Elf OS ABI
     pub e_abi: ElfOsAbi,
-
     /// Elf file type
     pub e_type: ElfType,
-
     /// Elf machine ISA
     pub e_machine: ElfMachine,
-
     /// Elf virtual address entry point
     pub e_entry: usize,
-
     /// Pointer to the start of the program header table
     pub e_phoff: usize,
-
     /// Pointer to the start of the section header table
     pub e_shoff: usize,
-
     /// Elf flags interpretation of this flag depends on the target 
     /// architecture
     pub e_flags: u32,
-
     /// Elf header size
     pub e_ehsize: u16,
-
     /// Elf program header table entry size
     pub e_phentsize: u16,
-
     /// Elf program header table entry size
     pub e_phnum: u16,
-
     /// Elf section header table entry size
-    pub e_shentrysize: u16,
-
+    pub e_shentsize: u16,
     /// Elf Section header table entry count
     pub e_shnum: u16,
-
     /// Elf section header string table index that contains section names
     pub e_shstrndx: u16,
 }
@@ -112,9 +99,6 @@ pub enum ElfMachine {
     UnDefined,
 }
 
-/// Wrapper type for the error result
-type Result<T> = core::result::Result<T, crate::Error>;
-
 impl Default for FileHeader {
     fn default() -> Self {
         Self::new()
@@ -137,7 +121,7 @@ impl FileHeader {
             e_ehsize:      0,
             e_phentsize:   0,
             e_phnum:       0,
-            e_shentrysize: 0,
+            e_shentsize:   0,
             e_shnum:       0,
             e_shstrndx:    0,
         }
@@ -330,7 +314,7 @@ impl FileHeader {
         pos += 0x02;
 
         // Get the elf section header table entry size
-        self.e_shentrysize = u16::endian_parse(pos..(pos + 0x02),
+        self.e_shentsize = u16::endian_parse(pos..(pos + 0x02),
             elf, &self.e_data)?;
 
         // Move the position to the new header part

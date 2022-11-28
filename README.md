@@ -11,10 +11,9 @@ An example of the elf parser
 ```rust
 use elven_parse::Elf;
 
-let file = std::fs::read("/path/to/the/elf/file");
-let elf = Elf::new(file.as_slice());
+let file = std::fs::read("/path/to/the/elf/file").unwrap();
 // Parse the header and populate the elf struct
-elf.parse().unwrap();
+let elf = Elf::new(file.as_slice()).parse().unwrap();
 // Use the iterators to iterate over the program and section header
 for program in elf.program_iter() {}
 for section in elf.section_iter() {}

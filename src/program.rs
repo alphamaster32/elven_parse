@@ -68,7 +68,7 @@ pub enum ProgramType {
 /// in order
 /// It is best that associated functions be used when using this struct
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct Perm(bool, bool, bool);
+pub struct Perm(pub bool, pub bool, pub bool);
 
 /// Helper type to implement the iterator type on
 /// The best is for the `program_iter()` function to be called

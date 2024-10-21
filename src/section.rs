@@ -59,6 +59,8 @@ pub struct SectionHeader {
     pub sh_addralign: usize,
     /// Entry size in bytes for fixed size sections otherwise it is zero
     pub sh_entsize: usize,
+    /// Used to identify the section header number to be linked to shstrtab
+    pub sh_ndx: usize,
 }
 
 /// Enum to identify section types
@@ -126,6 +128,8 @@ pub struct SectionFlags(usize);
 /// on the elf struct
 #[derive(Debug, Clone, Copy)]
 pub struct SectionIterator<'a> {
+    /// Used to count the number of sections
+    ndx: usize,
     /// Owned section header struct to address
     section_header: SectionHeader,
     /// Section header offset in the elf file
@@ -164,6 +168,7 @@ impl SectionHeader {
             sh_info:      0,
             sh_addralign: 0,
             sh_entsize:   0,
+            sh_ndx:       0,
         }
     }
 
@@ -318,6 +323,10 @@ impl<'a> Iterator for SectionIterator<'a> {
             // Subtract one from the number of the program headers
             self.shnum -= 1;
 
+            // Set the index number
+            self.section_header.sh_ndx = self.ndx;
+            self.ndx = self.ndx + 1;
+
             Some(self.section_header)
         }
     }
@@ -330,6 +339,7 @@ impl<'a> SectionIterator<'a> {
         let section = SectionHeader::new();
 
         SectionIterator {
+            ndx: 0,
             section_header: section,
             offset: e_shoff,
             shentsize: e_shentsize,

@@ -1,5 +1,7 @@
 #![no_std]
 
+// TODO:Add methods to instantiate section types easily
+
 mod utils;
 
 pub mod file;
@@ -27,6 +29,7 @@ pub enum Error {
     BadElf,
     OffsetCalculationFailure,
     UnsupportedClass,
+    UnreadableSection,
 }
 
 /// Wrapper type for the error result
@@ -75,9 +78,21 @@ impl<'a> Elf<'a> {
         )
     }
 
+    /// Returns the slice for the specified section
+    pub fn get_section(
+        &'a self,
+        sh: SectionHeader,
+    ) -> Result<&'a [u8]> {
+        Ok(self
+            .elf
+            .get(sh.sh_offset..(sh.sh_offset + sh.sh_size))
+            .ok_or(Error::UnreadableSection)?)
+    }
+
     /// This function returns the section name from the shstrtab
     pub fn section_name(&'a self, sh: SectionHeader) -> Option<&str> {
         if let Some(shtstrtab) = self.shtstrtab {
+            // FIXME: this should use the `get_section` function
             if let Some(strtab) = self.elf.get(
                 shtstrtab.sh_offset..(shtstrtab.sh_offset + shtstrtab.sh_size),
             ) {

@@ -1,0 +1,13 @@
+indent_style = "Block"
+reorder_imports = false
+binop_seperator = "Front"
+blank_lines_lower_bound = 0
+blank_lines_upper_bound = 1
+brace_style = "SameLineWhere"
+chain_width = 60
+comment_width = 79
+fn_call_width = 60
+fn_param_layout = "Tall"
+max_width = 79
+imports_granuality = "Module"
+newline_style = "unix"

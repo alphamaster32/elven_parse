@@ -36,7 +36,7 @@ pub const SHF_ORDERED: u32 = 1 << 30;
 pub const SHF_EXCLUDE: u32 = 1 << 31;
 
 /// Section header stores data about the sections of the elf file
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct SectionHeader {
     /// Identifies section name as indexes which is an offset of shstrtab
     pub sh_name: u32,
@@ -120,7 +120,7 @@ pub enum SectionType {
 }
 
 /// SectionFlags tuple struct to implement some is_* functions on
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct SectionFlags(usize);
 
 /// Helper type to implement the iterator type on
@@ -136,7 +136,7 @@ pub struct SectionIterator<'a> {
     offset: usize,
     /// Section header entry size
     shentsize: u16,
-    /// Number of header entries also used as 
+    /// Number of header entries also used as
     /// the index of the iteration
     shnum: u16,
     /// Elf class used for parsing
@@ -146,7 +146,6 @@ pub struct SectionIterator<'a> {
     /// A reference to the elf file
     elf: &'a [u8],
 }
-
 
 impl Default for SectionHeader {
     fn default() -> Self {
@@ -158,23 +157,27 @@ impl SectionHeader {
     /// The default `SectionHeader` constructor
     pub fn new() -> Self {
         SectionHeader {
-            sh_name:      0,
-            sh_type:      SectionType::None,
-            sh_flags:     SectionFlags(0),
-            sh_addr:      0,
-            sh_offset:    0,
-            sh_size:      0,
-            sh_link:      0,
-            sh_info:      0,
+            sh_name: 0,
+            sh_type: SectionType::None,
+            sh_flags: SectionFlags(0),
+            sh_addr: 0,
+            sh_offset: 0,
+            sh_size: 0,
+            sh_link: 0,
+            sh_info: 0,
             sh_addralign: 0,
-            sh_entsize:   0,
-            sh_ndx:       0,
+            sh_entsize: 0,
+            sh_ndx: 0,
         }
     }
 
     /// Parse the program header and populate the fields
-    pub fn parse(mut self, elf: &[u8], 
-        class: ElfClass, data: ElfData) -> Result<Self> {
+    pub fn parse(
+        mut self,
+        elf: &[u8],
+        class: ElfClass,
+        data: ElfData,
+    ) -> Result<Self> {
         // Get the pointer to the name of section
         self.sh_name = u32::endian_parse(0x00..0x04, elf, &data)?;
 
@@ -202,24 +205,24 @@ impl SectionHeader {
             Some(&[0xf5, 0xff, 0xff, 0x06]) => SectionType::ShtGnuAttributes,
             Some(&[0xf6, 0xff, 0xff, 0x06]) => SectionType::ShtGnuHash,
             Some(&[0xf7, 0xff, 0xff, 0x06]) => SectionType::ShtGnuLibList,
-            Some(&[_, _, _, 0x06])          => SectionType::ShtOs,
-            Some(&[_, _, _, 0x07])          => SectionType::ShtProc,
-            Some(&[_, _, _, 0x08])          => SectionType::ShtUser,
+            Some(&[_, _, _, 0x06]) => SectionType::ShtOs,
+            Some(&[_, _, _, 0x07]) => SectionType::ShtProc,
+            Some(&[_, _, _, 0x08]) => SectionType::ShtUser,
             _ => SectionType::None,
         };
 
         // Branch and parse according to the elf architecture class
         if class == ElfClass::Class32 {
             // Get the section flags
-            self.sh_flags.0 = u32::endian_parse(0x08..0x0c, elf, &data)? 
-                as usize;
+            self.sh_flags.0 =
+                u32::endian_parse(0x08..0x0c, elf, &data)? as usize;
 
             // Get the virtual address of the section in memory
             self.sh_addr = u32::endian_parse(0x0c..0x10, elf, &data)? as usize;
 
             // Get the offset of the section in elf file image
-            self.sh_offset = u32::endian_parse(0x10..0x14, elf, &data)? 
-                as usize;
+            self.sh_offset =
+                u32::endian_parse(0x10..0x14, elf, &data)? as usize;
 
             // Get the size of the section in the elf file image in bytes
             self.sh_size = u32::endian_parse(0x14..0x18, elf, &data)? as usize;
@@ -231,12 +234,12 @@ impl SectionHeader {
             self.sh_info = u32::endian_parse(0x1c..0x20, elf, &data)?;
 
             // Get the section alignment
-            self.sh_addralign = u32::endian_parse(0x20..0x24, elf, &data)? 
-                as usize;
+            self.sh_addralign =
+                u32::endian_parse(0x20..0x24, elf, &data)? as usize;
 
             // Get the entry size in bytes for sections that contain entries
-            self.sh_entsize = u32::endian_parse(0x24..0x28, elf, &data)? 
-                as usize;
+            self.sh_entsize =
+                u32::endian_parse(0x24..0x28, elf, &data)? as usize;
         } else if class == ElfClass::Class64 {
             // Get the section flags
             self.sh_flags.0 = usize::endian_parse(0x08..0x10, elf, &data)?;
@@ -311,11 +314,15 @@ impl<'a> Iterator for SectionIterator<'a> {
             None
         } else {
             // Parse the section header into the struct
-            self.section_header = 
-                self.section_header.parse(
-                    &self.elf[self.offset..self.offset + 
-                    self.shentsize as usize],
-                    self.class, self.data).ok()?;
+            self.section_header = self
+                .section_header
+                .parse(
+                    &self.elf
+                        [self.offset..self.offset + self.shentsize as usize],
+                    self.class,
+                    self.data,
+                )
+                .ok()?;
 
             // Calculate the next offset for the next program header
             self.offset += self.shentsize as usize;
@@ -333,8 +340,14 @@ impl<'a> Iterator for SectionIterator<'a> {
 }
 
 impl<'a> SectionIterator<'a> {
-    pub fn new(e_shoff: usize, e_shentsize: u16, e_shnum: u16,
-        class: ElfClass, data: ElfData, elf: &'a [u8]) -> Self {
+    pub fn new(
+        e_shoff: usize,
+        e_shentsize: u16,
+        e_shnum: u16,
+        class: ElfClass,
+        data: ElfData,
+        elf: &'a [u8],
+    ) -> Self {
         // Construct a empty section header for the program iterator
         let section = SectionHeader::new();
 

@@ -64,7 +64,7 @@ pub enum ProgramType {
 }
 
 /// struct to represent RWX perms on the program header
-/// The three booleans represented in the struct are Read, Write, Execute 
+/// The three booleans represented in the struct are Read, Write, Execute
 /// in order
 /// It is best that associated functions be used when using this struct
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -81,7 +81,7 @@ pub struct ProgramIterator<'a> {
     offset: usize,
     /// Program header entry size
     phentsize: u16,
-    /// Number of program header entries also used as 
+    /// Number of program header entries also used as
     /// the index of the iteration
     phnum: u16,
     /// Elf class used for parsing
@@ -91,7 +91,6 @@ pub struct ProgramIterator<'a> {
     /// A reference to the elf file
     elf: &'a [u8],
 }
-
 
 impl Default for ProgramHeader {
     fn default() -> Self {
@@ -103,20 +102,24 @@ impl ProgramHeader {
     /// The default `ProgramHeader` constructor
     pub fn new() -> Self {
         ProgramHeader {
-            p_type:   ProgramType::None,
-            p_flags:  Perm(false, false, false),
+            p_type: ProgramType::None,
+            p_flags: Perm(false, false, false),
             p_offset: 0,
-            p_vaddr:  0,
-            p_paddr:  0,
+            p_vaddr: 0,
+            p_paddr: 0,
             p_filesz: 0,
-            p_memsz:  0,
-            p_align:  0,
+            p_memsz: 0,
+            p_align: 0,
         }
     }
 
     /// Parse the `ProgramHeader` and populate the fields
-    pub fn parse(mut self, elf: &[u8], 
-        class: ElfClass, data: ElfData) -> Result<Self> {
+    pub fn parse(
+        mut self,
+        elf: &[u8],
+        class: ElfClass,
+        data: ElfData,
+    ) -> Result<Self> {
         // Get the segment type
         self.p_type = match elf.get(0x00..0x04) {
             Some(&[0x00, 0x00, 0x00, 0x00]) => ProgramType::PtNull,
@@ -130,27 +133,27 @@ impl ProgramHeader {
             Some(&[0x51, 0xe5, 0x74, 0x64]) => ProgramType::PtGnuStack,
             Some(&[0x52, 0xe5, 0x74, 0x64]) => ProgramType::PtGnuRelro,
             Some(&[0x53, 0xe5, 0x74, 0x64]) => ProgramType::PtGnuProperty,
-            Some(&[_, _, _, 0x60..=0x6f])   => ProgramType::PtOs,
-            Some(&[_, _, _, 0x70..=0x7f])   => ProgramType::PtProc,
+            Some(&[_, _, _, 0x60..=0x6f]) => ProgramType::PtOs,
+            Some(&[_, _, _, 0x70..=0x7f]) => ProgramType::PtProc,
             _ => ProgramType::None,
         };
 
         // Branch and parse according to the elf architecture class
         if class == ElfClass::Class32 {
             // Get the program offset of the segment
-            self.p_offset = 
+            self.p_offset =
                 u32::endian_parse(0x04..0x08, elf, &data)? as usize;
 
             // Get the program offset of the segment in the virtual memory
-            self.p_vaddr= u32::endian_parse(0x08..0x0c, elf, &data)? as usize;
+            self.p_vaddr = u32::endian_parse(0x08..0x0c, elf, &data)? as usize;
 
             // Get the program offset of the segment in the physical memory
-            // This part is only relevant in systems without which use 
+            // This part is only relevant in systems without which use
             // memory segmentation
             self.p_paddr = u32::endian_parse(0x0c..0x10, elf, &data)? as usize;
 
             // Size of the file image segment in bytes
-            self.p_filesz = 
+            self.p_filesz =
                 u32::endian_parse(0x10..0x14, elf, &data)? as usize;
 
             // Size of the segment mapped in the memory in bytes
@@ -177,10 +180,10 @@ impl ProgramHeader {
             self.p_offset = usize::endian_parse(0x08..0x10, elf, &data)?;
 
             // Get the program offset of the segment in the virtual memory
-            self.p_vaddr= usize::endian_parse(0x10..0x18, elf, &data)?;
+            self.p_vaddr = usize::endian_parse(0x10..0x18, elf, &data)?;
 
             // Get the program offset of the segment in the physical memory
-            // This part is only relevant in systems without which use 
+            // This part is only relevant in systems without which use
             // memory segmentation
             self.p_paddr = usize::endian_parse(0x18..0x20, elf, &data)?;
 
@@ -225,11 +228,15 @@ impl<'a> Iterator for ProgramIterator<'a> {
             None
         } else {
             // Parse the program header into the struct
-            self.program_header = 
-                self.program_header.parse(
-                    &self.elf[self.offset..self.offset + 
-                    self.phentsize as usize],
-                    self.class, self.data).ok()?;
+            self.program_header = self
+                .program_header
+                .parse(
+                    &self.elf
+                        [self.offset..self.offset + self.phentsize as usize],
+                    self.class,
+                    self.data,
+                )
+                .ok()?;
 
             // Calculate the next offset for the next program header
             self.offset += self.phentsize as usize;
@@ -243,8 +250,14 @@ impl<'a> Iterator for ProgramIterator<'a> {
 }
 
 impl<'a> ProgramIterator<'a> {
-    pub fn new(e_phoff: usize, e_phentsize: u16, e_phnum: u16, 
-        class: ElfClass, data: ElfData, elf: &'a [u8]) -> Self {
+    pub fn new(
+        e_phoff: usize,
+        e_phentsize: u16,
+        e_phnum: u16,
+        class: ElfClass,
+        data: ElfData,
+        elf: &'a [u8],
+    ) -> Self {
         // Construct a empty program header for the program iterator
         let program = ProgramHeader::new();
 

@@ -55,7 +55,7 @@ impl<'a> Elf<'a> {
     }
 
     /// Returns the `ProgramIterator` to use in a loop or an iterator
-    pub fn program_iter(&'a self) -> program::ProgramIterator {
+    pub fn program_iter(&self) -> program::ProgramIterator {
         ProgramIterator::new(
             self.file_header.e_phoff,
             self.file_header.e_phentsize,
@@ -67,7 +67,7 @@ impl<'a> Elf<'a> {
     }
 
     /// Returns the `SectionIterator` to use in a loop or an iterator
-    pub fn section_iter(&'a self) -> section::SectionIterator {
+    pub fn section_iter(&self) -> section::SectionIterator {
         SectionIterator::new(
             self.file_header.e_shoff,
             self.file_header.e_shentsize,
@@ -80,9 +80,9 @@ impl<'a> Elf<'a> {
 
     /// Returns the slice for the specified section
     pub fn get_section(
-        &'a self,
+        &self,
         sh: SectionHeader,
-    ) -> Result<&'a [u8]> {
+    ) -> Result<&[u8]> {
         Ok(self
             .elf
             .get(sh.sh_offset..(sh.sh_offset + sh.sh_size))
@@ -90,7 +90,7 @@ impl<'a> Elf<'a> {
     }
 
     /// This function returns the section name from the shstrtab
-    pub fn section_name(&'a self, sh: SectionHeader) -> Option<&str> {
+    pub fn section_name(&self, sh: SectionHeader) -> Option<&str> {
         if let Some(shtstrtab) = self.shtstrtab {
             // FIXME: this should use the `get_section` function
             if let Some(strtab) = self.elf.get(

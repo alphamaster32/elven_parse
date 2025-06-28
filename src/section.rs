@@ -36,7 +36,7 @@ pub const SHF_ORDERED: u32 = 1 << 30;
 pub const SHF_EXCLUDE: u32 = 1 << 31;
 
 /// Section header stores data about the sections of the elf file
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct SectionHeader {
     /// Identifies section name as indexes which is an offset of shstrtab
     pub sh_name: u32,
@@ -332,7 +332,7 @@ impl<'a> Iterator for SectionIterator<'a> {
 
             // Set the index number
             self.section_header.sh_ndx = self.ndx;
-            self.ndx = self.ndx + 1;
+            self.ndx += 1;
 
             Some(self.section_header)
         }

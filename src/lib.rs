@@ -79,14 +79,10 @@ impl<'a> Elf<'a> {
     }
 
     /// Returns the slice for the specified section
-    pub fn get_section(
-        &self,
-        sh: SectionHeader,
-    ) -> Result<&[u8]> {
-        Ok(self
-            .elf
+    pub fn get_section(&self, sh: SectionHeader) -> Result<&[u8]> {
+        self.elf
             .get(sh.sh_offset..(sh.sh_offset + sh.sh_size))
-            .ok_or(Error::UnreadableSection)?)
+            .ok_or(Error::UnreadableSection)
     }
 
     /// This function returns the section name from the shstrtab
@@ -107,7 +103,7 @@ impl<'a> Elf<'a> {
                     }
                 }
                 // Parse the string from byte slice
-                if let Some(name) = core::str::from_utf8(
+                core::str::from_utf8(
                     strtab
                         .get(
                             (sh.sh_name as usize)
@@ -116,11 +112,6 @@ impl<'a> Elf<'a> {
                         .unwrap(),
                 )
                 .ok()
-                {
-                    Some(name)
-                } else {
-                    None
-                }
             } else {
                 None
             }
@@ -135,12 +126,12 @@ impl<'a> Elf<'a> {
         self.file_header = self.file_header.parse(self.elf)?;
 
         let mut sht: SectionHeader = SectionHeader::new();
-        if self.shtstrtab == None {
+        if self.shtstrtab.is_none() {
             for section in self.section_iter() {
                 if section.sh_type == SectionType::ShtStrTab
                     && self.file_header.e_shstrndx as usize == section.sh_ndx
                 {
-                    sht = section.clone();
+                    sht = section;
                     break;
                 }
             }

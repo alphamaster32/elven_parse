@@ -161,9 +161,9 @@ impl ProgramHeader {
 
             // Get the memory permissions of the segment
             let flags = u32::endian_parse(0x18..0x1c, elf, &data)? as usize;
-            self.p_flags.2 = flags as usize & PF_X != 0;
-            self.p_flags.1 = flags as usize & PF_W != 0;
-            self.p_flags.0 = flags as usize & PF_R != 0;
+            self.p_flags.2 = flags & PF_X != 0;
+            self.p_flags.1 = flags & PF_W != 0;
+            self.p_flags.0 = flags & PF_R != 0;
 
             // Specifies alignment
             // 0 and 1 specify no alignment otherwise it should be integral

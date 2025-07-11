@@ -10,17 +10,19 @@ pub mod section;
 
 use file::FileHeader;
 use program::ProgramIterator;
-use section::{SectionHeader, SectionIterator, SectionType};
+use section::{SectionHeader, SectionIterator, SectionType, SymTab};
 
 /// Elf type to store the parsed information
 /// Struct members are defined according to the elf.h C header
 pub struct Elf<'a> {
-    /// Elf file header
+    /// Elf [`FileHeader`]
     pub file_header: FileHeader,
     /// Reference to the elf file in memory
     pub elf: &'a [u8],
-    /// 'SectionType::ShtStrTab' reference so we only find it once
+    /// [`SectionType::ShtStrTab`] reference so we only find it once
     pub shtstrtab: Option<SectionHeader>,
+    /// [`SectionType::ShtSymTab`] reference so we only find it once
+    pub shtsymtab: Option<SectionHeader>,
 }
 
 /// Error enum to distinctify the error types
@@ -48,9 +50,10 @@ impl<'a> Elf<'a> {
     /// The default [`Elf`] constructor
     pub fn new(elf: &'a [u8]) -> Self {
         Elf {
-            file_header: FileHeader::new(),
+            file_header: FileHeader::default(),
             elf,
             shtstrtab: None,
+            shtsymtab: None,
         }
     }
 
@@ -125,6 +128,7 @@ impl<'a> Elf<'a> {
         // Parse the elf header
         self.file_header = self.file_header.parse(self.elf)?;
 
+        // FIXME: This should be in its own module
         let mut sht: SectionHeader = SectionHeader::default();
         if self.shtstrtab.is_none() {
             for section in self.section_iter() {
@@ -177,5 +181,15 @@ mod tests {
             println!("{:#x?}", section);
         }
         println!("{:#x?}", e);
+    }
+
+    #[test]
+    fn read_symtab() {
+        let file = std::fs::read("../retina/tests/main.elf")
+            .expect("no file was found in the test location");
+        let e = Elf::new(file.as_slice());
+        let e = e.parse().unwrap();
+        let symtab = SymTab::new(&e);
+        println!("{symtab:x?}");
     }
 }

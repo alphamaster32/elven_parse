@@ -3,7 +3,7 @@ use crate::utils::Integer;
 use crate::Error;
 
 /// Elf file header type to store the file header information
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct FileHeader {
     /// Elf bitness
     pub e_class: ElfClass,
@@ -39,23 +39,25 @@ pub struct FileHeader {
 }
 
 /// ElfClass specifies elf architecture and bitness
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum ElfClass {
+    #[default]
     None,
     Class32,
     Class64,
 }
 
 /// ElfData specifies elf data encodings
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum ElfData {
+    #[default]
     None,
     ElfData2Lsb,
     ElfData2Msb,
 }
 
 /// ElfOSAbi specifies OS ABI of the elf file
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum ElfOsAbi {
     Sysv,
     Hpux,
@@ -70,12 +72,14 @@ pub enum ElfOsAbi {
     Openbsd,
     Armeabi,
     Arm,
+    #[default]
     Standalone,
 }
 
 /// ElfType defines elf object type
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum ElfType {
+    #[default]
     None,
     Relocatable,
     Executable,
@@ -88,8 +92,9 @@ pub enum ElfType {
 /// ElfMachine Specifies machine ISA type
 /// As this might get too big we will not specify all the available machine
 /// types in the libc
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum ElfMachine {
+    #[default]
     None,
     Intel80386,
     Amd64,
@@ -99,33 +104,7 @@ pub enum ElfMachine {
     UnDefined,
 }
 
-impl Default for FileHeader {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl FileHeader {
-    /// The default `FileHeader` constructor
-    pub fn new() -> Self {
-        FileHeader {
-            e_class: ElfClass::None,
-            e_data: ElfData::None,
-            e_abi: ElfOsAbi::Standalone,
-            e_type: ElfType::None,
-            e_machine: ElfMachine::None,
-            e_entry: 0,
-            e_phoff: 0,
-            e_shoff: 0,
-            e_flags: 0,
-            e_ehsize: 0,
-            e_phentsize: 0,
-            e_phnum: 0,
-            e_shentsize: 0,
-            e_shnum: 0,
-            e_shstrndx: 0,
-        }
-    }
     /// Parse the elf header and populate the fields
     pub fn parse(mut self, elf: &[u8]) -> Result<Self> {
         // Get the elf magic number from the start of the file

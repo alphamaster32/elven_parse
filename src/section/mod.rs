@@ -2,6 +2,9 @@ use crate::Result;
 use crate::utils::Integer;
 use crate::file::{ElfData, ElfClass};
 
+pub mod symtab;
+pub use symtab::SymTab;
+
 /// Writable
 pub const SHF_WRITE: u32 = 1 << 0;
 /// Occupies memory during execution

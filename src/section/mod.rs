@@ -125,7 +125,7 @@ pub enum SectionType {
 pub struct SectionFlags(usize);
 
 /// Helper type to implement the iterator type on
-/// The best is for the `section_iter()` function to be called
+/// The best is for the [`crate::Elf::section_iter()`] function to be called
 /// on the elf struct
 #[derive(Debug, Clone, Copy)]
 pub struct SectionIterator<'a> {

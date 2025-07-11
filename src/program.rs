@@ -71,7 +71,7 @@ pub enum ProgramType {
 pub struct Perm(pub bool, pub bool, pub bool);
 
 /// Helper type to implement the iterator type on
-/// The best is for the `program_iter()` function to be called
+/// The best is for the [`crate::Elf::program_iter()`] function to be called
 /// on the elf struct
 #[derive(Debug, Clone, Copy)]
 pub struct ProgramIterator<'a> {
@@ -99,7 +99,7 @@ impl Default for ProgramHeader {
 }
 
 impl ProgramHeader {
-    /// The default `ProgramHeader` constructor
+    /// The default [`ProgramHeader`] constructor
     pub fn new() -> Self {
         ProgramHeader {
             p_type: ProgramType::None,
@@ -113,7 +113,7 @@ impl ProgramHeader {
         }
     }
 
-    /// Parse the `ProgramHeader` and populate the fields
+    /// Parse the [`ProgramHeader`] and populate the fields
     pub fn parse(
         mut self,
         elf: &[u8],

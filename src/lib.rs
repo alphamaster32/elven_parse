@@ -45,7 +45,7 @@ impl<'a> core::fmt::Debug for Elf<'a> {
 }
 
 impl<'a> Elf<'a> {
-    /// The default `Elf` constructor
+    /// The default [`Elf`] constructor
     pub fn new(elf: &'a [u8]) -> Self {
         Elf {
             file_header: FileHeader::new(),
@@ -54,7 +54,7 @@ impl<'a> Elf<'a> {
         }
     }
 
-    /// Returns the `ProgramIterator` to use in a loop or an iterator
+    /// Returns the [`ProgramIterator`] to use in a loop or an iterator
     pub fn program_iter(&self) -> program::ProgramIterator {
         ProgramIterator::new(
             self.file_header.e_phoff,

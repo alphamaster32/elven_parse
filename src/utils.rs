@@ -37,4 +37,5 @@ macro_rules! impl_integer {
 impl_integer!(u8);
 impl_integer!(u16);
 impl_integer!(u32);
+impl_integer!(u64);
 impl_integer!(usize);

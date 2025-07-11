@@ -36,7 +36,7 @@ pub const SHF_ORDERED: u32 = 1 << 30;
 pub const SHF_EXCLUDE: u32 = 1 << 31;
 
 /// Section header stores data about the sections of the elf file
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct SectionHeader {
     /// Identifies section name as indexes which is an offset of shstrtab
     pub sh_name: u32,
@@ -64,8 +64,9 @@ pub struct SectionHeader {
 }
 
 /// Enum to identify section types
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum SectionType {
+    #[default]
     None,
     /// Section Table entry unused
     ShtNull,
@@ -120,7 +121,7 @@ pub enum SectionType {
 }
 
 /// SectionFlags tuple struct to implement some is_* functions on
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Default)]
 pub struct SectionFlags(usize);
 
 /// Helper type to implement the iterator type on
@@ -147,30 +148,7 @@ pub struct SectionIterator<'a> {
     elf: &'a [u8],
 }
 
-impl Default for SectionHeader {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl SectionHeader {
-    /// The default `SectionHeader` constructor
-    pub fn new() -> Self {
-        SectionHeader {
-            sh_name: 0,
-            sh_type: SectionType::None,
-            sh_flags: SectionFlags(0),
-            sh_addr: 0,
-            sh_offset: 0,
-            sh_size: 0,
-            sh_link: 0,
-            sh_info: 0,
-            sh_addralign: 0,
-            sh_entsize: 0,
-            sh_ndx: 0,
-        }
-    }
-
     /// Parse the program header and populate the fields
     pub fn parse(
         mut self,
@@ -349,7 +327,7 @@ impl<'a> SectionIterator<'a> {
         elf: &'a [u8],
     ) -> Self {
         // Construct a empty section header for the program iterator
-        let section = SectionHeader::new();
+        let section = SectionHeader::default();
 
         SectionIterator {
             ndx: 0,

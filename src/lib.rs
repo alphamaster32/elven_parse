@@ -125,7 +125,7 @@ impl<'a> Elf<'a> {
         // Parse the elf header
         self.file_header = self.file_header.parse(self.elf)?;
 
-        let mut sht: SectionHeader = SectionHeader::new();
+        let mut sht: SectionHeader = SectionHeader::default();
         if self.shtstrtab.is_none() {
             for section in self.section_iter() {
                 if section.sh_type == SectionType::ShtStrTab

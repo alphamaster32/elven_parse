@@ -2,43 +2,43 @@ use crate::Result;
 use crate::utils::Integer;
 use crate::Error;
 
-/// Elf file header type to store the file header information
+/// Elf file header type to store the file header information.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct FileHeader {
-    /// Elf bitness
+    /// Elf bitness.
     pub e_class: ElfClass,
-    /// Elf data encodings
+    /// Elf data encodings.
     pub e_data: ElfData,
-    /// Elf OS ABI
+    /// Elf OS ABI.
     pub e_abi: ElfOsAbi,
-    /// Elf file type
+    /// Elf file type.
     pub e_type: ElfType,
-    /// Elf machine ISA
+    /// Elf machine ISA.
     pub e_machine: ElfMachine,
-    /// Elf virtual address entry point
+    /// Elf virtual address entry point.
     pub e_entry: usize,
-    /// Pointer to the start of the program header table
+    /// Pointer to the start of the program header table.
     pub e_phoff: usize,
-    /// Pointer to the start of the section header table
+    /// Pointer to the start of the section header table.
     pub e_shoff: usize,
     /// Elf flags interpretation of this flag depends on the target
-    /// architecture
+    /// architecture.
     pub e_flags: u32,
-    /// Elf header size
+    /// Elf header size.
     pub e_ehsize: u16,
-    /// Elf program header table entry size
+    /// Elf program header table entry size.
     pub e_phentsize: u16,
-    /// Elf program header table entry size
+    /// Elf program header table entry size.
     pub e_phnum: u16,
-    /// Elf section header table entry size
+    /// Elf section header table entry size.
     pub e_shentsize: u16,
-    /// Elf Section header table entry count
+    /// Elf Section header table entry count.
     pub e_shnum: u16,
-    /// Elf section header string table index that contains section names
+    /// Elf section header string table index that contains section names.
     pub e_shstrndx: u16,
 }
 
-/// ElfClass specifies elf architecture and bitness
+/// ElfClass specifies elf architecture and bitness.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum ElfClass {
     #[default]
@@ -47,7 +47,7 @@ pub enum ElfClass {
     Class64,
 }
 
-/// ElfData specifies elf data encodings
+/// ElfData specifies elf data encodings.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum ElfData {
     #[default]
@@ -56,7 +56,7 @@ pub enum ElfData {
     ElfData2Msb,
 }
 
-/// ElfOSAbi specifies OS ABI of the elf file
+/// ElfOSAbi specifies OS ABI of the elf file.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum ElfOsAbi {
     Sysv,
@@ -76,7 +76,7 @@ pub enum ElfOsAbi {
     Standalone,
 }
 
-/// ElfType defines elf object type
+/// ElfType defines elf object type.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum ElfType {
     #[default]
@@ -89,9 +89,9 @@ pub enum ElfType {
     CpuSpecific,
 }
 
-/// ElfMachine Specifies machine ISA type
+/// ElfMachine Specifies machine ISA type.
 /// As this might get too big we will not specify all the available machine
-/// types in the libc
+/// types in the libc.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum ElfMachine {
     #[default]
@@ -105,15 +105,16 @@ pub enum ElfMachine {
 }
 
 impl FileHeader {
-    /// Parse the elf header and populate the fields
+    /// Parse the elf header and populate the fields.
     pub fn parse(mut self, elf: &[u8]) -> Result<Self> {
-        // Get the elf magic number from the start of the file
+        // Get the elf magic number from the start of the file.
         if elf.get(0x00..0x04) != Some(b"\x7FELF") {
             return Err(Error::BadElf);
         }
 
-        // Check for the bitness of the elf file and report it back as ElfClass
-        // Option type is cloned to avoid storing numbers in the .data section
+        // Check for the bitness of the elf file and report it back as
+        // ElfClass. Option type is cloned to avoid storing numbers in
+        // the .data section.
         self.e_class = if elf.get(0x04) == Some(&1) {
             ElfClass::Class32
         } else if elf.get(0x04) == Some(&2) {
@@ -128,7 +129,7 @@ impl FileHeader {
             return Err(Error::UnsupportedClass);
         }
 
-        // Check the data encoding of the elf file
+        // Check the data encoding of the elf file.
         self.e_data = if elf.get(0x05) == Some(&1) {
             ElfData::ElfData2Lsb
         } else if elf.get(0x05) == Some(&2) {
@@ -137,12 +138,12 @@ impl FileHeader {
             ElfData::None
         };
 
-        // Check for the elf version currently this value must be 1
+        // Check for the elf version currently this value must be 1.
         if elf.get(0x06) != Some(&1) {
             return Err(Error::BadElf);
         }
 
-        // Check for the OS ABI
+        // Check for the OS ABI.
         self.e_abi = match elf.get(0x07) {
             Some(e) => match e {
                 0 => ElfOsAbi::Sysv,
@@ -165,13 +166,13 @@ impl FileHeader {
             }
         };
 
-        // Get the abi version but discard it for future
+        // Get the abi version but discard it for future.
         let _e_abi_ver = elf.get(0x08).unwrap_or(&0);
 
-        // Discard the padding byte at 0x09 to 0x10
+        // Discard the padding byte at 0x09 to 0x10.
         let _padding = elf.get(0x09..0x10).unwrap_or(&[0u8; 7]);
 
-        // Identify the elf type
+        // Identify the elf type.
         self.e_type = match elf.get(0x10..0x12) {
             Some(&[0x00, 0x00]) => ElfType::None,
             Some(&[0x01, 0x00]) => ElfType::Relocatable,
@@ -183,7 +184,7 @@ impl FileHeader {
             _ => ElfType::None,
         };
 
-        // Get the target ISA
+        // Get the target ISA.
         self.e_machine = match elf.get(0x12..0x14) {
             Some(&[0x03, 0x00]) => ElfMachine::Intel80386,
             Some(&[0x3e, 0x00]) => ElfMachine::Amd64,
@@ -194,114 +195,114 @@ impl FileHeader {
         };
 
         // Check for the elf version for another time apparently this has more
-        // options like none and current version which is 1
+        // options like none and current version which is 1.
         if elf.get(0x14..0x18) != Some(&[0x01, 0x00, 0x00, 0x00]) {
             return Err(Error::BadElf);
         }
 
-        //Now we need the parser position in file
+        //Now we need the parser position in file.
         let mut pos: usize = 0x18;
 
-        // Calculate the next header part ending
+        // Calculate the next header part ending.
         let mut next: usize = match self.e_class {
             ElfClass::Class64 => 0x08 + pos,
             ElfClass::Class32 => 0x04 + pos,
             ElfClass::None => 0x08 + pos,
         };
 
-        // This section depends on the elf file class so we branch out
+        // This section depends on the elf file class so we branch out.
         if self.e_class == ElfClass::Class64 || self.e_class == ElfClass::None
         {
-            // Get the elf virtual address entry point
+            // Get the elf virtual address entry point.
             self.e_entry = usize::endian_parse(pos..next, elf, &self.e_data)?;
 
-            // Move the position to the new header part
+            // Move the position to the new header part.
             pos = next;
 
-            // Calculate the next header part ending
+            // Calculate the next header part ending.
             next = pos + 0x08;
 
-            // Get the elf program header offset
+            // Get the elf program header offset.
             self.e_phoff = usize::endian_parse(pos..next, elf, &self.e_data)?;
 
-            // Move the position to the new header part
+            // Move the position to the new header part.
             pos = next;
 
-            // Calculate the next header part ending
+            // Calculate the next header part ending.
             next = pos + 0x08;
 
-            // Get the elf section header offset
+            // Get the elf section header offset.
             self.e_shoff = usize::endian_parse(pos..next, elf, &self.e_data)?;
         } else if self.e_class == ElfClass::Class32 {
-            // Get the elf virtual address entry point
+            // Get the elf virtual address entry point.
             self.e_entry =
                 u32::endian_parse(pos..next, elf, &self.e_data)? as usize;
 
-            // Move the position to the new header part
+            // Move the position to the new header part.
             pos = next;
 
-            // Calculate the next header part ending
+            // Calculate the next header part ending.
             next = pos + 0x04;
 
-            // Get the elf program header offset
+            // Get the elf program header offset.
             self.e_phoff =
                 u32::endian_parse(pos..next, elf, &self.e_data)? as usize;
 
-            // Move the position to the new header part
+            // Move the position to the new header part.
             pos = next;
 
-            // Calculate the next header part ending
+            // Calculate the next header part ending.
             next = pos + 0x04;
 
-            // Get the elf section header offset
+            // Get the elf section header offset.
             self.e_shoff =
                 u32::endian_parse(pos..next, elf, &self.e_data)? as usize;
         }
 
-        // Move the position to the new header part
+        // Move the position to the new header part.
         pos = next;
 
-        // Get the elf processor specific flags
+        // Get the elf processor specific flags.
         self.e_flags =
             u32::endian_parse(pos..(pos + 0x04), elf, &self.e_data)?;
 
-        // Move the position to the new header part
+        // Move the position to the new header part.
         pos += 0x04;
         self.e_ehsize =
             u16::endian_parse(pos..(pos + 0x02), elf, &self.e_data)?;
 
-        // Move the position to the new header part
+        // Move the position to the new header part.
         pos += 0x02;
 
-        // Get the elf program header entry size
+        // Get the elf program header entry size.
         self.e_phentsize =
             u16::endian_parse(pos..(pos + 0x02), elf, &self.e_data)?;
 
-        // Move the position to the new header part
+        // Move the position to the new header part.
         pos += 0x02;
 
-        // Get the elf program header entry size
+        // Get the elf program header entry size.
         self.e_phnum =
             u16::endian_parse(pos..(pos + 0x02), elf, &self.e_data)?;
 
-        // Move the position to the new header part
+        // Move the position to the new header part.
         pos += 0x02;
 
-        // Get the elf section header table entry size
+        // Get the elf section header table entry size.
         self.e_shentsize =
             u16::endian_parse(pos..(pos + 0x02), elf, &self.e_data)?;
 
-        // Move the position to the new header part
+        // Move the position to the new header part.
         pos += 0x02;
 
-        // Get the elf section header table entry count
+        // Get the elf section header table entry count.
         self.e_shnum =
             u16::endian_parse(pos..(pos + 0x02), elf, &self.e_data)?;
 
-        // Move the position to the new header part
+        // Move the position to the new header part.
         let pos: usize = pos + 0x02;
 
-        // Get the elf section header string table
+        // Get the elf section header string table.
         self.e_shstrndx =
             u16::endian_parse(pos..(pos + 0x02), elf, &self.e_data)?;
 

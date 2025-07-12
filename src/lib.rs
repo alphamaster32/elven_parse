@@ -29,8 +29,6 @@ pub enum Error {
     BadElf,
     OffsetCalculationFailure,
     UnsupportedClass,
-    UnreadableSection,
-    SectionNotFound,
 }
 
 /// Wrapper type for the error result
@@ -91,10 +89,9 @@ impl<'a> Elf<'a> {
     }
 
     /// Returns the slice for the specified section.
-    pub fn get_section(&self, sh: &SectionHeader) -> Result<&[u8]> {
+    pub fn get_section(&self, sh: &SectionHeader) -> Option<&[u8]> {
         self.elf
             .get(sh.sh_offset as usize..((sh.sh_offset + sh.sh_size) as usize))
-            .ok_or(Error::UnreadableSection)
     }
 
     /// This function returns the name from the shstrtab by the index. Should

@@ -53,7 +53,7 @@ impl<'a> Elf<'a> {
     }
 
     /// Returns the [`ProgramIterator`] to use in a loop or an iterator.
-    pub fn program_iter(&self) -> program::ProgramIterator {
+    pub fn program_iter(&self) -> program::ProgramIterator<'_> {
         ProgramIterator::new(
             self.file_header.e_phoff,
             self.file_header.e_phentsize,
@@ -65,7 +65,7 @@ impl<'a> Elf<'a> {
     }
 
     /// Returns the [`SectionIterator`] to use in a loop or an iterator.
-    pub fn section_iter(&self) -> section::SectionIterator {
+    pub fn section_iter(&self) -> section::SectionIterator<'_> {
         SectionIterator::new(
             self.file_header.e_shoff,
             self.file_header.e_shentsize,
@@ -79,7 +79,7 @@ impl<'a> Elf<'a> {
     pub fn symtab_iter(
         &self,
         symtab: SectionHeader,
-    ) -> section::SymTabIterator {
+    ) -> section::SymTabIterator<'_> {
         SymTabIterator::new(
             Some(symtab),
             self.file_header.e_class,
@@ -146,10 +146,10 @@ impl<'a> Elf<'a> {
 
     pub fn find_section(&self, name: &str) -> Option<SectionHeader> {
         for section in self.section_iter() {
-            if let Some(section_name) = self.section_name(section) {
-                if section_name == name {
-                    return Some(section);
-                }
+            if let Some(section_name) = self.section_name(section)
+                && section_name == name
+            {
+                return Some(section);
             }
         }
         None
